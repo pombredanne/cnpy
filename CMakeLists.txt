@@ -13,18 +13,24 @@ find_package(ZLIB REQUIRED)
 
 include_directories(${ZLIB_INCLUDE_DIRS})
 
-add_library(cnpy SHARED "cnpy.cpp")
-target_link_libraries(cnpy ${ZLIB_LIBRARIES})
-install(TARGETS "cnpy" LIBRARY DESTINATION lib PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-
 if(ENABLE_STATIC)
     add_library(cnpy-static STATIC "cnpy.cpp")
     set_target_properties(cnpy-static PROPERTIES OUTPUT_NAME "cnpy")
+    target_link_libraries(cnpy-static ${ZLIB_LIBRARIES})
     install(TARGETS "cnpy-static" ARCHIVE DESTINATION lib)
+else(ENABLE_STATIC)
+  add_library(cnpy SHARED "cnpy.cpp")
+  target_link_libraries(cnpy ${ZLIB_LIBRARIES})
+  install(TARGETS "cnpy" DESTINATION lib PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endif(ENABLE_STATIC)
 
 install(FILES "cnpy.h" DESTINATION include)
 install(FILES "mat2npz" "npy2mat" "npz2mat" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 add_executable(example1 example1.cpp)
-target_link_libraries(example1 cnpy)
+
+if(ENABLE_STATIC)
+  target_link_libraries(example1 cnpy-static)
+else(ENABLE_STATIC)
+  target_link_libraries(example1 cnpy)
+endif(ENABLE_STATIC)
